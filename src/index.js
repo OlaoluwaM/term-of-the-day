@@ -41,7 +41,7 @@ wordService.onTransition(state => {
   const { retries, results, word } = state.context;
 
   if (retries >= MAX_RETRY_COUNT && currentState === 'rejected') {
-    console.error('Sorry something went wrong, could not get word definition 😭');
+    console.error('Sorry nothing yet. Until next time');
   } else if (currentState === 'resolved') {
     formatForStdout(filterDefinitionData({ results, word }));
   }
