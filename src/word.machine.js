@@ -1,4 +1,7 @@
-require('dotenv').config({ path: '../.env' });
+const path = require('path');
+require('dotenv').config({
+  path: path.resolve(path.dirname(path.dirname(__filename)), '.env'),
+});
 
 const axios = require('axios').default;
 
@@ -45,9 +48,13 @@ const wordMachine = createMachine(
         invoke: {
           id: 'getDefinition',
           src: async () => {
-            const wordDefinition = await getWordDefinition();
-            if (!wordDefinition.results) throw new Error('No definition was returned');
-            return wordDefinition;
+            try {
+              const wordDefinition = await getWordDefinition();
+              if (!wordDefinition.results) throw new Error('No definition was returned');
+              return wordDefinition;
+            } catch (error) {
+              throw error;
+            }
           },
 
           onDone: {
