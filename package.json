@@ -4,23 +4,31 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --watch"
   },
   "keywords": [],
   "author": "Olaoluwa Mustapha <jomeemustapha@gmail.com>",
   "license": "ISC",
   "devDependencies": {
+    "@types/jest": "^26.0.22",
     "eslint": "^7.23.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-prettier": "^3.3.1",
+    "jest": "^26.6.3",
     "prettier": "^2.2.1"
   },
   "dependencies": {
     "axios": "^0.21.1",
+    "boxen": "^5.0.1",
+    "chalk": "^4.1.1",
     "dotenv": "^8.2.0",
+    "edit-json-file": "^1.6.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
-    "terminal-kit": "^2.0.7",
+    "ora": "^5.4.0",
     "xstate": "^4.17.1"
+  },
+  "bin": {
+    "wordOfTheDay": "src/index.mjs"
   }
 }

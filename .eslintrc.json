@@ -28,6 +28,15 @@
     "no-console": "off",
     "no-debugger": "warn",
     "no-useless-catch": "off",
-    "wrap-iife": ["error", "inside"]
+    "wrap-iife": ["error", "inside"],
+    "import/order": "off",
+    "import/extensions": ["off"],
+    "import/prefer-default-export": "off",
+    "no-underscore-dangle": "off",
+    "consistent-return": "off",
+    "no-return-assign": "off",
+    "no-param-reassign": "off",
+    "no-useless-return": "off",
+    // "quotes": "off"
   }
 }
