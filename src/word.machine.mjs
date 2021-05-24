@@ -43,7 +43,9 @@ function stopSpinnerOnFailure() {
 }
 
 function outputWordOfTheDay({ wordOfTheDay }) {
-  console.log(boxen(prettifyOutput(wordOfTheDay), { padding: 1 }));
+  console.log(
+    boxen(prettifyOutput(wordOfTheDay), { padding: 1, borderStyle: 'classic' })
+  );
 }
 
 const wordMachine = createMachine(
