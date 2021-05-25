@@ -14,6 +14,12 @@ function limit(arr, limitTo) {
   return arr.slice(0, limitTo);
 }
 
+function formatDefinitions(definitionsArr) {
+  return definitionsArr
+    .map(({ text, partOfSpeech }) => `${text} (${partOfSpeech})`)
+    .join('\n\n');
+}
+
 export function getTodaysDateInTheCorrectFormat(testDate = Date.now()) {
   // Date should be in the format of yyyy-MM-dd
 
@@ -27,11 +33,13 @@ export function filterOutNecessaryProperties(obj) {
 
   return {
     word: obj.word,
-    definition: obj.definitions[0].text,
-    partOfSpeech: obj.definitions[0].partOfSpeech,
+    definitions: limit(
+      obj.definitions.map(({ text, partOfSpeech }) => ({ text, partOfSpeech })),
+      3
+    ),
     examples: limit(
       obj.examples.map(example => example.text),
-      2
+      3
     ),
     note: obj.note,
     synonyms: limit(getCorrectSynonymType(obj.synonyms, 'equivalent').words, 4),
@@ -41,18 +49,18 @@ export function filterOutNecessaryProperties(obj) {
 
 export function prettifyOutput(wordOfTheDayObject) {
   const { anonyms, note } = wordOfTheDayObject;
-  const { word, definition, partOfSpeech, examples, synonyms } = wordOfTheDayObject;
+  const { word, definitions, examples, synonyms } = wordOfTheDayObject;
 
   return [
-    ["Today's word", `${word} (${partOfSpeech})`],
+    ["Today's word", `${word}`],
 
-    ['Definition', definition],
+    ['Definition(s)', formatDefinitions(definitions)],
 
-    examples.length > 0 ? ['Examples', examples?.join('\n\n')] : null,
+    examples.length > 0 ? ['Example(s)', examples?.join('\n\n')] : null,
 
-    synonyms.length > 0 ? ['Synonyms', synonyms?.join(', ')] : null,
+    synonyms.length > 0 ? ['Synonym(s)', synonyms?.join(', ')] : null,
 
-    anonyms.length > 0 ? ['Anonyms', anonyms?.join(', ')] : null,
+    anonyms.length > 0 ? ['Anonym(s)', anonyms?.join(', ')] : null,
 
     note ? ['Fact', note] : null,
   ]
