@@ -8,7 +8,7 @@ import { fileURLToPath } from 'url';
 import {
   getTodaysDateInTheCorrectFormat,
   filterOutNecessaryProperties,
-} from './helper.mjs';
+} from './utils.mjs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

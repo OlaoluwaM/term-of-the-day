@@ -2,7 +2,7 @@ import ora from 'ora';
 import boxen from 'boxen';
 import getWordOfTheDay from './api.mjs';
 
-import { prettifyOutput } from './helper.mjs';
+import { prettifyOutput } from './utils.mjs';
 import { MAX_RETRY_COUNT } from './constants.mjs';
 import { createMachine, assign, interpret } from 'xstate';
 
