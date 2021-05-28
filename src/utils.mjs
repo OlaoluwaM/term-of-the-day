@@ -4,9 +4,9 @@ function normalizeDate(date) {
   return date < 10 ? `0${date}` : date;
 }
 
-function getCorrectSynonymType(synonyms, type) {
+function getCorrectRelationshipType(wordList, type) {
   return (
-    synonyms?.find(({ relationshipType }) => relationshipType === type) ?? { words: [] }
+    wordList?.find(({ relationshipType }) => relationshipType === type) ?? { words: [] }
   );
 }
 
@@ -37,13 +37,10 @@ export function filterOutNecessaryProperties(obj) {
       obj.definitions.map(({ text, partOfSpeech }) => ({ text, partOfSpeech })),
       3
     ),
-    examples: limit(
-      obj.examples.map(example => example.text),
-      3
-    ),
+    examples: limit(obj?.examples?.map(example => example.text) ?? [], 3),
     note: obj.note,
-    synonyms: limit(getCorrectSynonymType(obj.synonyms, 'equivalent').words, 4),
-    anonyms: limit(getCorrectSynonymType(obj.synonyms, 'anonyms').words, 4),
+    synonyms: limit(getCorrectRelationshipType(obj.synonyms, 'equivalent').words, 4),
+    anonyms: limit(getCorrectRelationshipType(obj.synonyms, 'anonyms').words, 4),
   };
 }
 

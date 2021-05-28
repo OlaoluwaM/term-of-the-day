@@ -27,7 +27,6 @@ async function getSynonymForWordOfTheDay(wordOfTheDay) {
     return synonymsOfWordOfTheDay;
   } catch (error) {
     console.error(chalk.red.bold("\n No synonyms for today's word it seems"));
-    return [];
   }
 }
 
@@ -49,9 +48,10 @@ export default async function getWordOfTheDay() {
 
     let synonymsOfWordOfTheDay = await getSynonymForWordOfTheDay(wordOfTheDayObject.word);
 
+    debugger;
     const returnObject = filterOutNecessaryProperties({
       ...wordOfTheDayObject,
-      synonyms: synonymsOfWordOfTheDay,
+      synonyms: synonymsOfWordOfTheDay ?? [],
       anonyms: undefined,
     });
 
