@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import wordService from './word.machine.mjs';
+import wordService from './.machine/word.machine';
 
 wordService.start();
 wordService.send({ type: 'FETCH' });

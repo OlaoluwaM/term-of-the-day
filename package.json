@@ -10,12 +10,17 @@
   "author": "Olaoluwa Mustapha <jomeemustapha@gmail.com>",
   "license": "ISC",
   "devDependencies": {
+    "@types/edit-json-file": "^1.4.1",
     "@types/jest": "^26.0.22",
+    "@types/jsdom": "^16.2.11",
+    "@typescript-eslint/eslint-plugin": "^4.28.0",
+    "@typescript-eslint/parser": "^4.25.0",
     "eslint": "^7.23.0",
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-prettier": "^3.3.1",
     "jest": "^26.6.3",
-    "prettier": "^2.2.1"
+    "prettier": "^2.2.1",
+    "typescript": "^4.3.2"
   },
   "dependencies": {
     "axios": "^0.21.1",
@@ -25,8 +30,9 @@
     "edit-json-file": "^1.6.0",
     "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.22.1",
+    "jsdom": "^16.6.0",
     "ora": "^5.4.0",
-    "xstate": "^4.17.1"
+    "xstate": "^4.23.0"
   },
   "bin": {
     "wordOfTheDay": "src/index.mjs"

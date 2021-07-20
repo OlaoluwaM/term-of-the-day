@@ -1,9 +1,11 @@
 import ora from 'ora';
 import boxen from 'boxen';
-import getWordOfTheDay from './api.mjs';
+import getWordOfTheDay from '../services/api';
 
-import { prettifyOutput } from './utils.mjs';
-import { MAX_RETRY_COUNT } from './constants.mjs';
+// import { prettifyOutput } from './utils.mjs';
+
+import { MAX_RETRY_COUNT } from '../utils/constants';
+import { createModel } from 'xstate/lib/model';
 import { createMachine, assign, interpret } from 'xstate';
 
 const wordMachineSpinner = ora("Fetching today's word \n");
@@ -48,7 +50,25 @@ function outputWordOfTheDay({ wordOfTheDay }) {
   );
 }
 
-const wordMachine = createMachine(
+interface WordMachineContext {
+  wordObj?: Record<string, unknown>;
+  retries: number;
+}
+
+type WordMachineEvents = { type: 'FETCH' } | { type: 'RETRY' };
+
+type WordMachineTypeStates =
+  | {
+      value: 'idle';
+      context: WordMachineContext;
+    }
+  | { value: 'pending'; context: WordMachineContext };
+
+const wordMachine = createMachine<
+  WordMachineContext,
+  WordMachineEvents,
+  WordMachineTypeStates
+>(
   {
     initial: 'idle',
 
