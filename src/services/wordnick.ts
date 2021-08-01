@@ -11,13 +11,13 @@ import type {
   RelatedWordObject,
   RelationshipTypes,
   WordNickDefinitionsResponseInterface,
-} from '../types/custom';
+} from '../types';
 
-import type { WordNickExamplesResponseInterface } from '../types/custom';
+import type { WordNickExamplesResponseInterface } from '../types';
 
 const { WORDNICK_API_KEY } = process.env;
 
-type GenericResponse<R> = {
+export type GenericResponse<R> = {
   type: 'synonyms' | 'anonyms' | 'definitions' | 'examples';
   value: R;
 };
@@ -25,7 +25,7 @@ type GenericResponse<R> = {
 export async function getRelatedWordsFromWordNick<T extends RelationshipTypes>(
   word: string,
   desiredRelationship: T
-): Promise<GenericResponse<RelatedWordObject<T>['words']> | void> {
+): Promise<GenericResponse<RelatedWordObject<T>['words']>> | never {
   try {
     const wordNickResponse = await wordnickAxios.get<RelatedWordObject<T>[]>(
       `/${word}/relatedWords?limitPerRelationshipType=${LIMIT_PER_RELATIONSHIP_TYPE}&api_key=${WORDNICK_API_KEY}`
@@ -36,17 +36,19 @@ export async function getRelatedWordsFromWordNick<T extends RelationshipTypes>(
         ({ relationshipType }) => relationshipType === desiredRelationship
       )?.[0]?.words ?? null;
 
-    return { type: parseRelationship(desiredRelationship), value: desiredRelatedWords };
+    return {
+      type: parseRelationship(desiredRelationship),
+      value: desiredRelatedWords,
+    };
   } catch (error) {
     console.error(error);
+    throw error;
   }
 }
 
 export async function getDefinition(
   word: string
-): Promise<GenericResponse<
-  WordNickDefinitionsResponseInterface['text'][] | null
-> | void> {
+): Promise<GenericResponse<WordNickDefinitionsResponseInterface['text'][]>> | never {
   try {
     const wordNickResponse = await wordnickAxios.get<
       Partial<WordNickDefinitionsResponseInterface>[]
@@ -56,21 +58,16 @@ export async function getDefinition(
       ({ text }) => text
     ) as WordNickDefinitionsResponseInterface['text'][];
 
-    return { type: 'definitions', value: definitions[0] === 'err' ? null : definitions };
+    return { type: 'definitions', value: definitions[0] === 'err' ? [] : definitions };
   } catch (error) {
     console.error(error);
+    throw error;
   }
 }
 
 export async function getExamples(
   word: string
-): Promise<GenericResponse<WordNickExamplesResponseInterface['text'][] | null>> {
-  const returnValue: GenericResponse<WordNickExamplesResponseInterface['text'][] | null> =
-    {
-      type: 'examples',
-      value: null,
-    };
-
+): Promise<GenericResponse<WordNickExamplesResponseInterface['text'][]>> | never {
   try {
     const wordNickResponse = await wordnickAxios.get<{
       examples: Partial<WordNickExamplesResponseInterface>[];
@@ -82,10 +79,12 @@ export async function getExamples(
       ({ text }) => text
     ) as WordNickExamplesResponseInterface['text'][];
 
-    returnValue.value = examples[0] === 'err' ? null : examples;
+    return {
+      type: 'examples',
+      value: examples[0] === 'err' ? [] : examples,
+    };
   } catch (error) {
     console.error(error);
+    throw error;
   }
-
-  return returnValue;
 }

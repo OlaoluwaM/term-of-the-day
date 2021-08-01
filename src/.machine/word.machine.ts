@@ -1,92 +1,73 @@
 import ora from 'ora';
-import boxen from 'boxen';
+import chalk from 'chalk';
 import getWordOfTheDay from '../services/api';
 
-// import { prettifyOutput } from './utils.mjs';
-
-import { MAX_RETRY_COUNT } from '../utils/constants';
+import { interpret } from 'xstate';
 import { createModel } from 'xstate/lib/model';
-import { createMachine, assign, interpret } from 'xstate';
+import { MAX_RETRY_COUNT } from '../utils/constants';
+import { prettifyOutput, stripFalsyValuesFromProperties } from '../utils/utils';
 
-const wordMachineSpinner = ora("Fetching today's word \n");
+import type { Await, GenericWordOfTheDayInterface } from '../types';
 
-const setWordDataIntoContext = assign({
-  wordOfTheDay: (_, event) => event.data,
-});
+const wordMachineSpinner = ora("Fetching today's word\n");
 
-const incrementRetries = assign({
-  retries: ({ retries }) => (retries += 1),
-});
-
-const resetRetries = assign({
-  retries: 0,
-});
-
-function canRetry(context) {
-  return context.retries < MAX_RETRY_COUNT;
-}
-
-function announceRetry({ retries }) {
-  if (retries === 1) wordMachineSpinner.fail('Ooops, something went wrong!');
-  wordMachineSpinner.text = `Retrying... (${retries} / ${MAX_RETRY_COUNT})`;
-}
-
-function showLoadingSpinner({ retries }) {
-  if (retries === 0) console.log('\n');
-  wordMachineSpinner.start();
-}
-
-function stopSpinnerOnSuccess() {
-  wordMachineSpinner.succeed('Fetch successful');
-}
-
-function stopSpinnerOnFailure() {
-  wordMachineSpinner.fail("Sorry! Couldn't get today's word \n");
-}
-
-function outputWordOfTheDay({ wordOfTheDay }) {
-  console.log(
-    boxen(prettifyOutput(wordOfTheDay), { padding: 1, borderStyle: 'classic' })
-  );
-}
-
-interface WordMachineContext {
-  wordObj?: Record<string, unknown>;
+interface MachineContextInterface {
+  wordObj?: Partial<GenericWordOfTheDayInterface>;
   retries: number;
 }
 
-type WordMachineEvents = { type: 'FETCH' } | { type: 'RETRY' };
+type ReturnedServiceData = Await<ReturnType<typeof getWordOfTheDay>>;
 
-type WordMachineTypeStates =
-  | {
-      value: 'idle';
-      context: WordMachineContext;
-    }
-  | { value: 'pending'; context: WordMachineContext };
+const wordOfTheDayMachineContext: MachineContextInterface = {
+  wordObj: undefined,
+  retries: 0,
+};
 
-const wordMachine = createMachine<
-  WordMachineContext,
-  WordMachineEvents,
-  WordMachineTypeStates
->(
+const machineModel = createModel(wordOfTheDayMachineContext, {
+  events: {
+    FETCH: () => ({}),
+    RETRY: () => ({}),
+    DONE: (data: ReturnedServiceData) => ({ data }),
+  },
+});
+
+function canRetry(context: MachineContextInterface) {
+  return context.retries <= MAX_RETRY_COUNT;
+}
+
+function outputWordOfTheDay(context: MachineContextInterface) {
+  prettifyOutput(context.wordObj as GenericWordOfTheDayInterface);
+}
+
+const incrementRetries = machineModel.assign({
+  retries: context => (context.retries += 1),
+});
+
+const resetRetries = machineModel.assign({
+  retries: 0,
+});
+
+const setWordDataIntoContext = machineModel.assign(
+  {
+    wordObj: (context, event) =>
+      stripFalsyValuesFromProperties(event.data) as Partial<GenericWordOfTheDayInterface>,
+  },
+  'DONE'
+);
+
+const wordMachine = machineModel.createMachine(
   {
     initial: 'idle',
-
-    context: {
-      wordObj: undefined,
-      retries: 0,
-    },
+    context: machineModel.initialContext,
 
     states: {
       idle: {
         on: {
-          FETCH: { target: 'pending' },
+          FETCH: { target: 'pending', actions: 'startSpinner' },
         },
       },
 
       pending: {
-        entry: 'showLoadingSpinner',
-
         invoke: {
           src: 'getWordOfTheDay',
 
@@ -112,8 +93,6 @@ const wordMachine = createMachine<
       },
 
       failure: {
-        entry: 'stopSpinnerOnFailure',
-
         on: {
           RETRY: { target: 'pending', actions: 'resetRetries' },
         },
@@ -122,20 +101,31 @@ const wordMachine = createMachine<
   },
   {
     actions: {
-      setWordDataIntoContext,
-      incrementRetries,
-      resetRetries,
-      announceRetry,
-      showLoadingSpinner,
-      stopSpinnerOnSuccess,
-      stopSpinnerOnFailure,
-      outputWordOfTheDay,
+      canRetry: canRetry,
+      incrementRetries: incrementRetries,
+      outputWordOfTheDay: outputWordOfTheDay,
+      resetRetries: resetRetries,
+      setWordDataIntoContext: setWordDataIntoContext as any,
+
+      announceRetry: context => {
+        wordMachineSpinner.start(
+          chalk.red.bold(` Retrying  (${context.retries}/${MAX_RETRY_COUNT})`)
+        );
+      },
+      startSpinner: () => {
+        console.log('');
+        wordMachineSpinner.start();
+      },
+      stopSpinnerOnSuccess: () => {
+        wordMachineSpinner.succeed(chalk.greenBright.bold(' Done!'));
+      },
+      stopSpinnerOnFailure: () => {
+        wordMachineSpinner.fail(` Failed to fetch word of the day`);
+      },
     },
-    guards: {
-      canRetry,
-    },
+
     services: {
-      getWordOfTheDay,
+      getWordOfTheDay: () => getWordOfTheDay(),
     },
   }
 );

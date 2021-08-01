@@ -1,8 +1,11 @@
-import { GenericWordOfTheDayInterface } from '../types/custom';
 import scrapeDictionaryDotCom from './dictionary.com';
 import { getDefinition, getExamples, getRelatedWordsFromWordNick } from './wordnick';
 
-export default async function grabWordOfTheDay(): Promise<GenericWordOfTheDayInterface> {
+import type { GenericWordOfTheDayInterface, Await } from '../types';
+
+export default async function grabWordOfTheDay():
+  | Promise<GenericWordOfTheDayInterface>
+  | never {
   const partialWordOfTheDayObject = await scrapeDictionaryDotCom();
   const { word } = partialWordOfTheDayObject;
 
@@ -13,25 +16,34 @@ export default async function grabWordOfTheDay(): Promise<GenericWordOfTheDayInt
     getExamples(word as string),
   ]);
 
-  const response: PromiseFulfilledResult = responseArr.find(
-    res => res.status === 'fulfilled'
-  );
-  responseArr.forEach((response: any) => {
-    if (response.status === 'rejected') return;
-    if (!('value' in response)) return;
+  const fulfilledResponses: Await<
+    Exclude<typeof responseArr[number], PromiseRejectedResult>['value']
+  >[] = (
+    responseArr.filter(res => res.status !== 'rejected') as Exclude<
+      typeof responseArr[number],
+      PromiseRejectedResult
+    >[]
+  ).map(r => r.value);
 
-    const propertyExists =
-      (response.value?.type as keyof GenericWordOfTheDayInterface) in
-      partialWordOfTheDayObject;
+  const completeWordOfTheDayObject = fulfilledResponses.reduce(
+    (wordOfTheDayObj: typeof partialWordOfTheDayObject, fulfilledValue) => {
+      const property = fulfilledValue.type;
+      const propertyAlreadyExists = property in partialWordOfTheDayObject;
 
-    if (!propertyExists) {
-      partialWordOfTheDayObject[response.value.type] = response.value.value;
-    } else {
-      partialWordOfTheDayObject[response.value.type].concat(response.value.value);
-    }
-  });
+      if (propertyAlreadyExists) {
+        wordOfTheDayObj[property] = fulfilledValue.value
+          ? wordOfTheDayObj[property]?.concat(fulfilledValue.value)
+          : wordOfTheDayObj[property];
+      } else {
+        wordOfTheDayObj[property] = fulfilledValue.value ?? undefined;
+      }
 
-  return partialWordOfTheDayObject;
+      return partialWordOfTheDayObject;
+    },
+    partialWordOfTheDayObject
+  ) as GenericWordOfTheDayInterface;
+
+  return completeWordOfTheDayObject;
 }
 
-console.log(grabWordOfTheDay());
+// console.log(grabWordOfTheDay());

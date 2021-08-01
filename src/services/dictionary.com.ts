@@ -3,7 +3,7 @@ import axios from 'axios';
 import { JSDOM } from 'jsdom';
 import { getMonthAndDay, removeAllWhiteSpaceFromString } from '../utils/utils';
 
-import type { GenericWordOfTheDayInterface, OrUndefined } from '../types/custom';
+import type { GenericWordOfTheDayInterface, OrUndefined } from '../types';
 
 function throwMissingElementError(): never {
   throw new Error('Could not scrap necessary element on Dictionary.com');
@@ -54,7 +54,10 @@ export default async function scrapeDictionaryDotCom(): Promise<
       )[1],
     ],
 
-    examples: Array.from(wordOfTheDayExamples.querySelectorAll(`p`), elem => '1'),
+    examples: Array.from(
+      wordOfTheDayExamples.querySelectorAll(`p`),
+      (elem: { textContent: string }) => elem.textContent
+    ),
   };
 
   return wordOfTheDayObject;
