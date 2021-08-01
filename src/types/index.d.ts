@@ -1,3 +1,6 @@
+export type FalsyValues = 0 | false | void | null;
+
+export type Await<Type> = Type extends Promise<infer Value> ? Await<Value> : Type;
 export type OrUndefined<T, K = keyof T> = Record<K, T[K] | undefined>;
 
 export type CorrectDateFormat = `${string}-${string}-${string}`;
