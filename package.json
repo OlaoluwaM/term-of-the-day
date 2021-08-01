@@ -36,6 +36,6 @@
     "xstate": "^4.23.0"
   },
   "bin": {
-    "wordOfTheDay": "src/index.mjs"
+    "wordOfTheDay": "build/index.js"
   }
 }
