@@ -72,6 +72,6 @@
     "skipLibCheck": true /* Skip type checking of declaration files. */,
     "forceConsistentCasingInFileNames": true /* Disallow inconsistently-cased references to the same file. */
   },
-  "include": ["src/**/*", "src/.machine/word.machine.ts"],
+  "include": ["src/**/*", "src/.machine/*"],
   "exclude": ["node_modules"]
 }
