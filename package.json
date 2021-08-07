@@ -2,8 +2,8 @@
   "name": "term-of-the-day",
   "version": "1.0.0",
   "description": "",
-  "main": "build/index.js",
-  "types": "build/types/index.d.ts",
+  "main": "build/src/index.js",
+  "types": "build/src/types/index.d.ts",
   "scripts": {
     "build": "tsc"
   },
@@ -36,6 +36,6 @@
     "xstate": "^4.23.0"
   },
   "bin": {
-    "wordOfTheDay": "build/index.js"
+    "wordOfTheDay": "build/src/index.js"
   }
 }
