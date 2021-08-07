@@ -1,6 +1,7 @@
-import 'dotenv/config';
+import dotenv from 'dotenv';
 
 import { wordnickAxios } from './config';
+import { dirname, resolve } from 'path';
 import { limit, parseRelationship } from '../utils/utils';
 import {
   EXAMPLES_LIMIT,
@@ -15,6 +16,10 @@ import type {
 
 import type { WordNickExamplesResponseInterface } from '../types';
 
+const __rootDir = dirname(dirname(dirname(__dirname)));
+
+dotenv.config({ path: resolve(__rootDir, '.env') });
+
 const { WORDNICK_API_KEY } = process.env;
 
 export type GenericResponse<R> = {
@@ -26,6 +31,9 @@ export async function getRelatedWordsFromWordNick<T extends RelationshipTypes>(
   word: string,
   desiredRelationship: T
 ): Promise<GenericResponse<RelatedWordObject<T>['words']>> | never {
+  const errorMessage =
+    `Something went wrong grabbing related words from wordNick API` as const;
+
   try {
     const wordNickResponse = await wordnickAxios.get<RelatedWordObject<T>[]>(
       `/${word}/relatedWords?limitPerRelationshipType=${LIMIT_PER_RELATIONSHIP_TYPE}&api_key=${WORDNICK_API_KEY}`
@@ -40,15 +48,18 @@ export async function getRelatedWordsFromWordNick<T extends RelationshipTypes>(
       type: parseRelationship(desiredRelationship),
       value: desiredRelatedWords,
     };
-  } catch (error) {
-    console.error(error);
-    throw error;
+  } catch {
+    console.error(errorMessage);
+    throw new Error(errorMessage);
   }
 }
 
 export async function getDefinition(
   word: string
 ): Promise<GenericResponse<WordNickDefinitionsResponseInterface['text'][]>> | never {
+  const errorMessage =
+    `Something went wrong grabbing definitions from wordNick API` as const;
+
   try {
     const wordNickResponse = await wordnickAxios.get<
       Partial<WordNickDefinitionsResponseInterface>[]
@@ -60,14 +71,17 @@ export async function getDefinition(
 
     return { type: 'definitions', value: definitions[0] === 'err' ? [] : definitions };
   } catch (error) {
-    console.error(error);
-    throw error;
+    console.error(errorMessage);
+    throw new Error(errorMessage);
   }
 }
 
 export async function getExamples(
   word: string
 ): Promise<GenericResponse<WordNickExamplesResponseInterface['text'][]>> | never {
+  const errorMessage =
+    `Something went wrong grabbing usage examples from wordNick API` as const;
+
   try {
     const wordNickResponse = await wordnickAxios.get<{
       examples: Partial<WordNickExamplesResponseInterface>[];
@@ -84,7 +98,7 @@ export async function getExamples(
       value: examples[0] === 'err' ? [] : examples,
     };
   } catch (error) {
-    console.error(error);
-    throw error;
+    console.error(errorMessage);
+    throw new Error(errorMessage);
   }
 }

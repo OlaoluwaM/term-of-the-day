@@ -45,5 +45,3 @@ export default async function grabWordOfTheDay():
 
   return completeWordOfTheDayObject;
 }
-
-// console.log(grabWordOfTheDay());

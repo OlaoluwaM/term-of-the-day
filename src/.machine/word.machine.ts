@@ -9,7 +9,7 @@ import { prettifyOutput, stripFalsyValuesFromProperties } from '../utils/utils';
 
 import type { Await, GenericWordOfTheDayInterface } from '../types';
 
-const wordMachineSpinner = ora("Fetching today's word\n");
+let wordMachineSpinner = ora("Fetching today's word\n");
 
 interface MachineContextInterface {
   wordObj?: Partial<GenericWordOfTheDayInterface>;
@@ -32,7 +32,7 @@ const machineModel = createModel(wordOfTheDayMachineContext, {
 });
 
 function canRetry(context: MachineContextInterface) {
-  return context.retries <= MAX_RETRY_COUNT;
+  return context.retries < MAX_RETRY_COUNT;
 }
 
 function outputWordOfTheDay(context: MachineContextInterface) {
@@ -93,6 +93,7 @@ const wordMachine = machineModel.createMachine(
       },
 
       failure: {
+        entry: 'stopSpinnerOnFailure',
         on: {
           RETRY: { target: 'pending', actions: 'resetRetries' },
         },
@@ -100,32 +101,38 @@ const wordMachine = machineModel.createMachine(
     },
   },
   {
-    actions: {
+    guards: {
       canRetry: canRetry,
+    },
+
+    actions: {
       incrementRetries: incrementRetries,
       outputWordOfTheDay: outputWordOfTheDay,
       resetRetries: resetRetries,
       setWordDataIntoContext: setWordDataIntoContext as any,
 
       announceRetry: context => {
-        wordMachineSpinner.start(
-          chalk.red.bold(` Retrying  (${context.retries}/${MAX_RETRY_COUNT})`)
+        wordMachineSpinner.warn(
+          chalk.yellowBright.bold(` Retrying (${context.retries}/${MAX_RETRY_COUNT})`)
         );
       },
+      
       startSpinner: () => {
         console.log('');
         wordMachineSpinner.start();
       },
+
       stopSpinnerOnSuccess: () => {
         wordMachineSpinner.succeed(chalk.greenBright.bold(' Done!'));
       },
+
       stopSpinnerOnFailure: () => {
-        wordMachineSpinner.fail(` Failed to fetch word of the day`);
+        wordMachineSpinner.fail(chalk.redBright.bold(` Failed to fetch word of the day`));
       },
     },
 
     services: {
-      getWordOfTheDay: () => getWordOfTheDay(),
+      getWordOfTheDay: () => getWordOfTheDay,
     },
   }
 );

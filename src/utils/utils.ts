@@ -80,7 +80,7 @@ export function prettifyOutput(wordOfTheDayObj?: GenericWordOfTheDayInterface): 
         valueOutput = value
           .map(
             (value: string, index: number) =>
-              `${chalk.gray(index + 1)}. ${chalk.green.bold(
+              `${chalk.white(index + 1)}. ${chalk.green.bold(
                 capitalize(removeHTMLTagChars(value))
               )}`
           )
