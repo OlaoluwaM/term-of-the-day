@@ -34,3 +34,7 @@ export interface GenericWordOfTheDayInterface {
   anonyms?: string[];
   synonyms?: string[];
 }
+
+export interface WordStoreInterface {
+  [key: CorrectDateFormat]: GenericWordOfTheDayInterface;
+}

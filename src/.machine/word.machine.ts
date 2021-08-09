@@ -1,10 +1,11 @@
 import ora from 'ora';
 import chalk from 'chalk';
-import getWordOfTheDay from '../services/api';
+import getWordOfTheDay from '../services/serviceApi';
 
 import { interpret } from 'xstate';
 import { createModel } from 'xstate/lib/model';
 import { MAX_RETRY_COUNT } from '../utils/constants';
+import { createWordStore, storeWordObject } from '../wordStore/storeApi';
 import { prettifyOutput, stripFalsyValuesFromProperties } from '../utils/utils';
 
 import type { Await, GenericWordOfTheDayInterface } from '../types';
@@ -63,7 +64,10 @@ const wordMachine = machineModel.createMachine(
     states: {
       idle: {
         on: {
-          FETCH: { target: 'pending', actions: 'startSpinner' },
+          FETCH: {
+            target: 'pending',
+            actions: ['startSpinner', 'createWordStoreAction'],
+          },
         },
       },
 
@@ -76,10 +80,11 @@ const wordMachine = machineModel.createMachine(
             actions: 'setWordDataIntoContext',
           },
 
+          // TODO: Store errors in context and log them out (beautifully) once we reach the failure state
           onError: [
             {
               target: 'pending',
-              actions: ['announceRetry', 'incrementRetries'],
+              actions: ['announceError', 'announceRetry', 'incrementRetries'],
               cond: 'canRetry',
             },
             { target: 'failure' },
@@ -88,7 +93,7 @@ const wordMachine = machineModel.createMachine(
       },
 
       success: {
-        entry: ['stopSpinnerOnSuccess', 'outputWordOfTheDay'],
+        entry: ['stopSpinnerOnSuccess', 'storeWordObjectAction', 'outputWordOfTheDay'],
         type: 'final',
       },
 
@@ -116,7 +121,17 @@ const wordMachine = machineModel.createMachine(
           chalk.yellowBright.bold(` Retrying (${context.retries}/${MAX_RETRY_COUNT})`)
         );
       },
-      
+
+      createWordStoreAction: () => createWordStore,
+
+      storeWordObjectAction: context => {
+        storeWordObject(context.wordObj as GenericWordOfTheDayInterface);
+      },
+
+      announceError: (context, event) => {
+        if ('data' in event) console.error(event.data);
+      },
+
       startSpinner: () => {
         console.log('');
         wordMachineSpinner.start();

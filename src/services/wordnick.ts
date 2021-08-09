@@ -16,7 +16,11 @@ import type {
 
 import type { WordNickExamplesResponseInterface } from '../types';
 
-const __rootDir = dirname(dirname(dirname(__dirname)));
+let __rootDir: string;
+
+if (__dirname.includes('build')) {
+  __rootDir = dirname(dirname(dirname(__dirname)));
+} else __rootDir = dirname(dirname(__dirname));
 
 dotenv.config({ path: resolve(__rootDir, '.env') });
 
@@ -48,7 +52,9 @@ export async function getRelatedWordsFromWordNick<T extends RelationshipTypes>(
       type: parseRelationship(desiredRelationship),
       value: desiredRelatedWords,
     };
-  } catch {
+  } catch (err) {
+    console.log(err);
+
     console.error(errorMessage);
     throw new Error(errorMessage);
   }

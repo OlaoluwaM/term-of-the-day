@@ -4,6 +4,14 @@ import boxen from 'boxen';
 import type { CorrectDateFormat, RelationshipTypes } from '../types';
 import type { FalsyValues, GenericWordOfTheDayInterface } from '../types';
 
+export function isEmptyObject(value: Record<string, unknown>): boolean {
+  return JSON.stringify(value) === '{}' ? true : false;
+}
+
+export function isEmptyArray(value: unknown[]): boolean {
+  return value.length === 0 ? true : false;
+}
+
 function normalizeDate(date: number): string | number {
   return date < 10 ? `0${date}` : date;
 }
@@ -13,7 +21,7 @@ export function limit<T>(arr: T[], limitTo: number): T[] {
 }
 
 export function getTodaysDateInTheCorrectFormat(
-  testDate: number = Date.now()
+  testDate: number | string | Date = Date.now()
 ): CorrectDateFormat {
   // Date should be in the format of yyyy-MM-dd
 
@@ -64,6 +72,22 @@ function capitalize(str: string): string {
 
 function removeHTMLTagChars(str: string): string {
   return str.replace(/<[^>]*>/g, '');
+}
+
+export function stripHTML(wordObj: GenericWordOfTheDayInterface): {
+  [key: string]: string | string[];
+} {
+  return Object.fromEntries(
+    Object.entries(wordObj).map(([key, value]: [string, string[] | string]) => {
+      let intermitValue = value;
+
+      if (Array.isArray(intermitValue)) {
+        intermitValue = intermitValue.map(str => removeHTMLTagChars(str));
+      } else intermitValue = removeHTMLTagChars(intermitValue);
+
+      return [key, intermitValue];
+    })
+  );
 }
 
 export function prettifyOutput(wordOfTheDayObj?: GenericWordOfTheDayInterface): void {

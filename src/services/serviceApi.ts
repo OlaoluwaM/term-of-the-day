@@ -1,4 +1,6 @@
 import scrapeDictionaryDotCom from './dictionary.com';
+
+import { doesStoreExist, retrieveRangeOfWordsFromStore } from '../wordStore/storeApi';
 import { getDefinition, getExamples, getRelatedWordsFromWordNick } from './wordnick';
 
 import type { GenericWordOfTheDayInterface, Await } from '../types';
@@ -6,6 +8,14 @@ import type { GenericWordOfTheDayInterface, Await } from '../types';
 export default async function grabWordOfTheDay():
   | Promise<GenericWordOfTheDayInterface>
   | never {
+  if (doesStoreExist()) {
+    const wordOfTheDayObject = retrieveRangeOfWordsFromStore();
+
+    if (wordOfTheDayObject && !Array.isArray(wordOfTheDayObject)) {
+      return wordOfTheDayObject;
+    }
+  }
+
   const partialWordOfTheDayObject = await scrapeDictionaryDotCom();
   const { word } = partialWordOfTheDayObject;
 
