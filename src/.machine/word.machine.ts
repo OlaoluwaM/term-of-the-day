@@ -4,17 +4,24 @@ import getWordOfTheDay from '../services/serviceApi';
 
 import { interpret } from 'xstate';
 import { createModel } from 'xstate/lib/model';
-import { MAX_RETRY_COUNT } from '../utils/constants';
 import { createWordStore, storeWordObject } from '../wordStore/storeApi';
-import { prettifyOutput, stripFalsyValuesFromProperties } from '../utils/utils';
+import { MAX_RETRY_COUNT, siteToScrapeFrom } from '../utils/constants';
+import {
+  logError,
+  prettifyOutput,
+  prettifyErrorOutput,
+  stripFalsyValuesFromProperties,
+} from '../utils/utils';
 
+import type { DoneInvokeEvent, ErrorPlatformEvent } from 'xstate';
 import type { Await, GenericWordOfTheDayInterface } from '../types';
 
-let wordMachineSpinner = ora("Fetching today's word\n");
+let wordMachineSpinner = ora(`Fetching today's word from ${siteToScrapeFrom}\n`);
 
 interface MachineContextInterface {
   wordObj?: Partial<GenericWordOfTheDayInterface>;
   retries: number;
+  errors?: string[];
 }
 
 type ReturnedServiceData = Await<ReturnType<typeof getWordOfTheDay>>;
@@ -29,6 +36,7 @@ const machineModel = createModel(wordOfTheDayMachineContext, {
     FETCH: () => ({}),
     RETRY: () => ({}),
     DONE: (data: ReturnedServiceData) => ({ data }),
+    ERROR: (data: Error | string) => ({ data }),
   },
 });
 
@@ -48,13 +56,27 @@ const resetRetries = machineModel.assign({
   retries: 0,
 });
 
-const setWordDataIntoContext = machineModel.assign(
-  {
-    wordObj: (context, event) =>
-      stripFalsyValuesFromProperties(event.data) as Partial<GenericWordOfTheDayInterface>,
+const setWordDataIntoContext = machineModel.assign({
+  wordObj: (context, _event: any) => {
+    const event: DoneInvokeEvent<ReturnedServiceData> = _event;
+
+    return stripFalsyValuesFromProperties(
+      event.data
+    ) as Partial<GenericWordOfTheDayInterface>;
   },
-  'DONE'
-);
+});
+
+const storeErrorInContext = machineModel.assign({
+  errors: (context, _event: any) => {
+    const event: ErrorPlatformEvent = _event;
+    if (!('data' in event)) return context?.errors ?? undefined;
+
+    const errorsCopy = context.errors ? [...context.errors] : [];
+    errorsCopy.push(event.data?.message ?? event.data);
+
+    return errorsCopy;
+  },
+});
 
 const wordMachine = machineModel.createMachine(
   {
@@ -80,11 +102,10 @@ const wordMachine = machineModel.createMachine(
             actions: 'setWordDataIntoContext',
           },
 
-          // TODO: Store errors in context and log them out (beautifully) once we reach the failure state
           onError: [
             {
               target: 'pending',
-              actions: ['announceError', 'announceRetry', 'incrementRetries'],
+              actions: ['storeErrorInContext', 'announceRetry', 'incrementRetries'],
               cond: 'canRetry',
             },
             { target: 'failure' },
@@ -98,7 +119,7 @@ const wordMachine = machineModel.createMachine(
       },
 
       failure: {
-        entry: 'stopSpinnerOnFailure',
+        entry: ['stopSpinnerOnFailure', 'announceErrors'],
         on: {
           RETRY: { target: 'pending', actions: 'resetRetries' },
         },
@@ -114,7 +135,8 @@ const wordMachine = machineModel.createMachine(
       incrementRetries: incrementRetries,
       outputWordOfTheDay: outputWordOfTheDay,
       resetRetries: resetRetries,
-      setWordDataIntoContext: setWordDataIntoContext as any,
+      setWordDataIntoContext: setWordDataIntoContext,
+      storeErrorInContext: storeErrorInContext,
 
       announceRetry: context => {
         wordMachineSpinner.warn(
@@ -128,8 +150,13 @@ const wordMachine = machineModel.createMachine(
         storeWordObject(context.wordObj as GenericWordOfTheDayInterface);
       },
 
-      announceError: (context, event) => {
-        if ('data' in event) console.error(event.data);
+      announceErrors: context => {
+        if (!context?.errors) {
+          logError('No errors to log out');
+          return;
+        }
+
+        prettifyErrorOutput(context.errors);
       },
 
       startSpinner: () => {
@@ -142,7 +169,10 @@ const wordMachine = machineModel.createMachine(
       },
 
       stopSpinnerOnFailure: () => {
-        wordMachineSpinner.fail(chalk.redBright.bold(` Failed to fetch word of the day`));
+        console.log('');
+        wordMachineSpinner.fail(
+          chalk.redBright.bold(` Failed to fetch word of the day\n`)
+        );
       },
     },
 

@@ -3,10 +3,12 @@ import axios from 'axios';
 import { JSDOM } from 'jsdom';
 import { getMonthAndDay, removeAllWhiteSpaceFromString } from '../utils/utils';
 
-import type { GenericWordOfTheDayInterface, OrUndefined } from '../types';
+import type { GenericWordOfTheDayInterface } from '../types';
 
-function throwMissingElementError(): never {
-  throw new Error('Could not scrap necessary element on Dictionary.com');
+export function throwMissingElementError(item = ''): never {
+  throw new Error(
+    `Could not scrape necessary element on Dictionary.com. Item ${item} is missing`
+  );
 }
 
 export default async function scrapeDictionaryDotCom(): Promise<
@@ -23,15 +25,15 @@ export default async function scrapeDictionaryDotCom(): Promise<
   const wordOfTheDayElement = document.querySelector(
     `div[data-date='${getMonthAndDay()}'] > :nth-child(2)`
   );
-  if (!wordOfTheDayElement) throwMissingElementError();
+  if (!wordOfTheDayElement) throwMissingElementError('Word of the day element');
 
   const wordOfTheDayItems = wordOfTheDayElement.querySelector(
     `:first-child > :first-child`
   );
-  if (!wordOfTheDayItems) throwMissingElementError();
+  if (!wordOfTheDayItems) throwMissingElementError('Word of the day items');
 
   const wordOfTheDayExamples = wordOfTheDayElement.querySelector(`div[class*="example"]`);
-  if (!wordOfTheDayExamples) throwMissingElementError();
+  if (!wordOfTheDayExamples) throwMissingElementError('Necessary examples');
 
   const wordOfTheDayObject: GenericWordOfTheDayInterface = {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -42,7 +44,7 @@ export default async function scrapeDictionaryDotCom(): Promise<
     pronunciation: wordOfTheDayItems
       .querySelector(`div[class*="__pronunciation"]`)
       ?.textContent?.trim()
-      .replace(/[^a-zA-Z-]/g, '') as string,
+      .replace(/[^a-zA-Z-,\s]/g, '') as string,
 
     partOfSpeech: removeAllWhiteSpaceFromString(
       wordOfTheDayElement.querySelector('div[class*="__pos"]')?.textContent as string

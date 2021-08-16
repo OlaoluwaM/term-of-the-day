@@ -53,8 +53,6 @@ export async function getRelatedWordsFromWordNick<T extends RelationshipTypes>(
       value: desiredRelatedWords,
     };
   } catch (err) {
-    console.log(err);
-
     console.error(errorMessage);
     throw new Error(errorMessage);
   }

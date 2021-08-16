@@ -4,6 +4,13 @@ import boxen from 'boxen';
 import type { CorrectDateFormat, RelationshipTypes } from '../types';
 import type { FalsyValues, GenericWordOfTheDayInterface } from '../types';
 
+const boxenOptions = {
+  padding: 1,
+  margin: 1,
+  borderStyle: 'round',
+  dimBorder: true,
+} as const;
+
 export function isEmptyObject(value: Record<string, unknown>): boolean {
   return JSON.stringify(value) === '{}' ? true : false;
 }
@@ -90,8 +97,19 @@ export function stripHTML(wordObj: GenericWordOfTheDayInterface): {
   );
 }
 
+export function prettifyErrorOutput(errors: string[]): void {
+  const errorOutput: string = errors
+    .map((error, ind) => {
+      return `${chalk.whiteBright.bold(`${ind + 1})`)}  ${chalk.redBright(error)}`;
+    })
+    .join('\n\n')
+    .trim();
+
+  console.log(boxen(errorOutput, boxenOptions));
+}
+
 export function prettifyOutput(wordOfTheDayObj?: GenericWordOfTheDayInterface): void {
-  if (!wordOfTheDayObj) {
+  if (!wordOfTheDayObj || isEmptyObject(wordOfTheDayObj as any)) {
     logError('Nothing to log out');
     return;
   }
@@ -115,15 +133,8 @@ export function prettifyOutput(wordOfTheDayObj?: GenericWordOfTheDayInterface): 
     })
     .join('\n\n');
 
-  console.log(chalk.white.underline('\nThe Term of The Day'));
-  console.log(
-    boxen(wordOfTheDayString, {
-      padding: 1,
-      margin: 1,
-      borderStyle: 'round',
-      dimBorder: true,
-    })
-  );
+  console.log(chalk.bgGreen.whiteBright.bold('\nThe Term of The Day'));
+  console.log(boxen(wordOfTheDayString, boxenOptions));
 }
 
 export function logInfo(string: string): void {

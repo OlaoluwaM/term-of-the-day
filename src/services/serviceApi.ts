@@ -1,22 +1,71 @@
-import scrapeDictionaryDotCom from './dictionary.com';
+import path from 'path';
+import editJsonFile from 'edit-json-file';
+import scrapeFunctionToUse from './scrape';
 
-import { doesStoreExist, retrieveRangeOfWordsFromStore } from '../wordStore/storeApi';
+import { SiteOptions, siteArgument } from '../utils/constants';
+import { getTodaysDateInTheCorrectFormat } from '../utils/utils';
 import { getDefinition, getExamples, getRelatedWordsFromWordNick } from './wordnick';
+import {
+  doesStoreExist,
+  retrieveLastWordStoreEntry,
+  retrieveRangeOfWordsFromStore,
+} from '../wordStore/storeApi';
 
-import type { GenericWordOfTheDayInterface, Await } from '../types';
+import type {
+  Await,
+  WordStoreInterface,
+  PossibleScriptParameters,
+  GenericWordOfTheDayInterface,
+} from '../types';
+
+const siteWordOfTheDayIsFrom = SiteOptions[siteArgument as PossibleScriptParameters];
+
+function retrieveWordFromCacheIfPossible(): GenericWordOfTheDayInterface | false {
+  const _wordStore = editJsonFile(
+    path.resolve(`${path.dirname(path.dirname(__filename))}`, 'wordStore', 'store.json')
+  );
+
+  const wordStoreObject = JSON.parse(
+    JSON.stringify(_wordStore.toObject())
+  ) as WordStoreInterface;
+
+  const todayDate = getTodaysDateInTheCorrectFormat();
+  const storeExists: boolean = doesStoreExist();
+
+  const todayWordHasBeenCached = Object.prototype.hasOwnProperty.call(
+    wordStoreObject,
+    todayDate
+  );
+
+  const alreadyScrapedFromSite: boolean =
+    wordStoreObject[todayDate]?.from === siteWordOfTheDayIsFrom;
+
+  if (storeExists && todayWordHasBeenCached && alreadyScrapedFromSite) {
+    const wordOfTheDayObject = retrieveRangeOfWordsFromStore(todayDate);
+
+    if (wordOfTheDayObject) return wordOfTheDayObject[0];
+  }
+
+  return false;
+}
 
 export default async function grabWordOfTheDay():
   | Promise<GenericWordOfTheDayInterface>
   | never {
-  if (doesStoreExist()) {
-    const wordOfTheDayObject = retrieveRangeOfWordsFromStore();
+  let partialWordOfTheDayObject: Partial<GenericWordOfTheDayInterface>;
 
-    if (wordOfTheDayObject && !Array.isArray(wordOfTheDayObject)) {
-      return wordOfTheDayObject;
-    }
+  const wordObjFromCache = retrieveWordFromCacheIfPossible();
+  if (wordObjFromCache) return wordObjFromCache;
+
+  try {
+    partialWordOfTheDayObject = await scrapeFunctionToUse();
+    partialWordOfTheDayObject.from = siteWordOfTheDayIsFrom;
+  } catch (err) {
+    partialWordOfTheDayObject = retrieveLastWordStoreEntry();
+    partialWordOfTheDayObject.note =
+      "Seems like today's word is not out yet, try again later";
   }
 
-  const partialWordOfTheDayObject = await scrapeDictionaryDotCom();
   const { word } = partialWordOfTheDayObject;
 
   const responseArr = await Promise.allSettled([

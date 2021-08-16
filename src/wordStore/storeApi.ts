@@ -24,7 +24,7 @@ export function storeWordObject(wordObject: GenericWordOfTheDayInterface): void 
   wordStore.set(getTodaysDateInTheCorrectFormat(), stripHTML(wordObject));
 }
 
-function retrieveLastWordStoreEntry() {
+export function retrieveLastWordStoreEntry(): GenericWordOfTheDayInterface {
   const wordStore = editJsonFile(wordStorePath);
   const wordStoreObject = wordStore.toObject() as WordStoreInterface;
   const length = Object.keys(wordStoreObject).length;
@@ -37,7 +37,7 @@ type CustomDateTypes = number | string | Date;
 export function retrieveRangeOfWordsFromStore(
   startDate: CustomDateTypes = Date.now(),
   endDate: CustomDateTypes = Date.now()
-): GenericWordOfTheDayInterface | GenericWordOfTheDayInterface[] | null {
+): GenericWordOfTheDayInterface[] | null {
   const wordStore = editJsonFile(wordStorePath);
   const wordStoreObject = wordStore.toObject() as WordStoreInterface;
 
@@ -50,7 +50,7 @@ export function retrieveRangeOfWordsFromStore(
   }
 
   if (startDateInMilliseconds === endDateInMilliseconds) {
-    return retrieveLastWordStoreEntry();
+    return [retrieveLastWordStoreEntry()];
   }
 
   const rangeQueryValue = Object.entries(wordStoreObject)

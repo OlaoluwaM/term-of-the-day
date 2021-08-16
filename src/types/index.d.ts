@@ -33,8 +33,12 @@ export interface GenericWordOfTheDayInterface {
   examples: string[];
   anonyms?: string[];
   synonyms?: string[];
+  note?: string;
+  from?: string;
 }
 
+export type PossibleScriptParameters = `--M` | '--D' | '--merriam' | '--dictionary';
+
 export interface WordStoreInterface {
-  [key: CorrectDateFormat]: GenericWordOfTheDayInterface;
+  [key: string]: GenericWordOfTheDayInterface;
 }
