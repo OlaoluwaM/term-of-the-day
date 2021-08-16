@@ -4,8 +4,8 @@ import getWordOfTheDay from '../services/serviceApi';
 
 import { interpret } from 'xstate';
 import { createModel } from 'xstate/lib/model';
+import { MAX_RETRY_COUNT } from '../utils/constants';
 import { createWordStore, storeWordObject } from '../wordStore/storeApi';
-import { MAX_RETRY_COUNT, siteToScrapeFrom } from '../utils/constants';
 import {
   logError,
   prettifyOutput,
@@ -16,7 +16,7 @@ import {
 import type { DoneInvokeEvent, ErrorPlatformEvent } from 'xstate';
 import type { Await, GenericWordOfTheDayInterface } from '../types';
 
-let wordMachineSpinner = ora(`Fetching today's word from ${siteToScrapeFrom}\n`);
+let wordMachineSpinner = ora(`Fetching today's word\n`);
 
 interface MachineContextInterface {
   wordObj?: Partial<GenericWordOfTheDayInterface>;
