@@ -59,7 +59,6 @@ export default async function grabWordOfTheDay():
 
   try {
     partialWordOfTheDayObject = await scrapeFunctionToUse();
-    partialWordOfTheDayObject.from = siteWordOfTheDayIsFrom;
   } catch (err) {
     partialWordOfTheDayObject = retrieveLastWordStoreEntry();
     partialWordOfTheDayObject.note =
@@ -101,6 +100,10 @@ export default async function grabWordOfTheDay():
     },
     partialWordOfTheDayObject
   ) as GenericWordOfTheDayInterface;
+
+  if (!completeWordOfTheDayObject?.from) {
+    completeWordOfTheDayObject.from = siteWordOfTheDayIsFrom;
+  }
 
   return completeWordOfTheDayObject;
 }
