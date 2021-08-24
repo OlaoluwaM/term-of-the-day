@@ -27,18 +27,22 @@ export interface WordNickExamplesResponseInterface {
 
 export interface GenericWordOfTheDayInterface {
   word: string;
-  pronunciation: string;
   partOfSpeech: string;
+  pronunciation: string;
   definitions: string[];
   examples: string[];
-  anonyms?: string[];
   synonyms?: string[];
+  anonyms?: string[];
   note?: string;
-  from?: string;
+  from: 'merriam-webster.com' | 'dictionary.com';
 }
 
 export type PossibleScriptParameters = `--M` | '--D' | '--merriam' | '--dictionary';
 
+export interface MultiSiteWordStoreInterface {
+  'Merriam Webster': GenericWordOfTheDayInterface;
+  Dictionary?: GenericWordOfTheDayInterface;
+}
 export interface WordStoreInterface {
-  [key: string]: GenericWordOfTheDayInterface;
+  [key: string]: MultiSiteWordStoreInterface;
 }

@@ -1,4 +1,3 @@
-import chalk from 'chalk';
 import scrapeDictionaryDotCom from './dictionary.com';
 import scrapeMerriamWebsterDotCom from './merriam-webster.com';
 

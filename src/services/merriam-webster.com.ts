@@ -62,5 +62,12 @@ export default async function scrapeMerriamWebsterDotCom(): Promise<
     throwMissingElementError('Examples');
   }
 
-  return { word, definitions, partOfSpeech, pronunciation, examples };
+  return {
+    word,
+    definitions,
+    partOfSpeech,
+    pronunciation,
+    examples,
+    from: 'merriam-webster.com',
+  };
 }

@@ -2,8 +2,8 @@ import path from 'path';
 import editJsonFile from 'edit-json-file';
 import scrapeFunctionToUse from './scrape';
 
-import { SiteOptions, siteArgument } from '../utils/constants';
 import { getTodaysDateInTheCorrectFormat } from '../utils/utils';
+import { siteToScrapeFrom, resolveSiteToPartialUrl } from '../utils/constants';
 import { getDefinition, getExamples, getRelatedWordsFromWordNick } from './wordnick';
 import {
   doesStoreExist,
@@ -11,14 +11,7 @@ import {
   retrieveRangeOfWordsFromStore,
 } from '../wordStore/storeApi';
 
-import type {
-  Await,
-  WordStoreInterface,
-  PossibleScriptParameters,
-  GenericWordOfTheDayInterface,
-} from '../types';
-
-const siteWordOfTheDayIsFrom = SiteOptions[siteArgument as PossibleScriptParameters];
+import type { Await, WordStoreInterface, GenericWordOfTheDayInterface } from '../types';
 
 function retrieveWordFromCacheIfPossible(): GenericWordOfTheDayInterface | false {
   const _wordStore = editJsonFile(
@@ -37,10 +30,12 @@ function retrieveWordFromCacheIfPossible(): GenericWordOfTheDayInterface | false
     todayDate
   );
 
-  const alreadyScrapedFromSite: boolean =
-    wordStoreObject[todayDate]?.from === siteWordOfTheDayIsFrom;
+  const todaysWordFromSiteAlreadyExists = Object.prototype.hasOwnProperty.call(
+    wordStoreObject[todayDate] ?? {},
+    siteToScrapeFrom ?? 'Merriam Webster'
+  );
 
-  if (storeExists && todayWordHasBeenCached && alreadyScrapedFromSite) {
+  if (storeExists && todayWordHasBeenCached && todaysWordFromSiteAlreadyExists) {
     const wordOfTheDayObject = retrieveRangeOfWordsFromStore(todayDate);
 
     if (wordOfTheDayObject) return wordOfTheDayObject[0];
@@ -55,6 +50,7 @@ export default async function grabWordOfTheDay():
   let partialWordOfTheDayObject: Partial<GenericWordOfTheDayInterface>;
 
   const wordObjFromCache = retrieveWordFromCacheIfPossible();
+
   if (wordObjFromCache) return wordObjFromCache;
 
   try {
@@ -102,7 +98,7 @@ export default async function grabWordOfTheDay():
   ) as GenericWordOfTheDayInterface;
 
   if (!completeWordOfTheDayObject?.from) {
-    completeWordOfTheDayObject.from = siteWordOfTheDayIsFrom;
+    completeWordOfTheDayObject.from = resolveSiteToPartialUrl[siteToScrapeFrom];
   }
 
   return completeWordOfTheDayObject;

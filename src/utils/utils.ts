@@ -108,26 +108,62 @@ export function prettifyErrorOutput(errors: string[]): void {
   console.log(boxen(errorOutput, boxenOptions));
 }
 
+function rearrangeWordOfTheDayObject(
+  wordOfTheDayObj: GenericWordOfTheDayInterface
+): GenericWordOfTheDayInterface {
+  const orderOfProperties = [
+    'word',
+    'partOfSpeech',
+    'pronunciation',
+    'definitions',
+    'examples',
+    'synonyms',
+    'anonyms',
+    'note',
+    'from',
+  ] as const;
+
+  return orderOfProperties.reduce((wordObj, property) => {
+    const value = wordOfTheDayObj[property];
+    if (value) wordObj[property] = value;
+    return wordObj;
+  }, {} as Record<keyof GenericWordOfTheDayInterface, string | string[] | undefined>) as GenericWordOfTheDayInterface;
+}
+
 export function prettifyOutput(wordOfTheDayObj?: GenericWordOfTheDayInterface): void {
   if (!wordOfTheDayObj || isEmptyObject(wordOfTheDayObj as any)) {
     logError('Nothing to log out');
     return;
   }
 
-  const wordOfTheDayString: string = Object.entries(wordOfTheDayObj)
+  const wordOfTheDayString: string = Object.entries(
+    rearrangeWordOfTheDayObject(wordOfTheDayObj)
+  )
     .map(([key, value]) => {
       let valueOutput: string;
 
       if (Array.isArray(value)) {
         valueOutput = value
-          .map(
-            (value: string, index: number) =>
-              `${chalk.white(index + 1)}. ${chalk.green.bold(
-                capitalize(removeHTMLTagChars(value))
-              )}`
-          )
+          .map((value: string, index: number, arr: string[]) => {
+            const stringWithoutHTML = removeHTMLTagChars(value);
+
+            if (value.startsWith('—')) {
+              arr[index - 1].concat(` ${value}`);
+              return undefined;
+            }
+
+            return `${chalk.white(index + 1)}. ${chalk.green.bold(
+              capitalize(stringWithoutHTML)
+            )}`;
+          })
+          .filter(Boolean)
           .join('\n\n');
-      } else valueOutput = capitalize(removeHTMLTagChars(value));
+      } else {
+        valueOutput =
+          key === 'from'
+            ? removeHTMLTagChars(value)
+            : capitalize(removeHTMLTagChars(value));
+      }
 
       return `${chalk.whiteBright.bold.underline(capitalize(key))}\n      ${valueOutput}`;
     })
@@ -147,4 +183,8 @@ export function logError(string: string): void {
 
 export function logSuccess(string: string): void {
   console.log(chalk.green.bold(string));
+}
+
+export function isIntegerOrUndefined(val: number): number | undefined {
+  return val >= 0 ? val : undefined;
 }

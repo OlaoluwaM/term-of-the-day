@@ -1,8 +1,10 @@
 import fs from 'fs';
 import path from 'path';
 import editJsonFile from 'edit-json-file';
+
+import { siteToScrapeFrom, wordShouldBeStored } from './../utils/constants';
+import { WordStoreInterface, GenericWordOfTheDayInterface } from '../types';
 import { getTodaysDateInTheCorrectFormat, isEmptyArray, stripHTML } from '../utils/utils';
-import { GenericWordOfTheDayInterface, WordStoreInterface } from '../types';
 
 const wordStorePath = path.resolve(__dirname, 'store.json');
 
@@ -21,7 +23,13 @@ export function createWordStore(): void {
 
 export function storeWordObject(wordObject: GenericWordOfTheDayInterface): void {
   const wordStore = editJsonFile(wordStorePath, { autosave: true });
-  wordStore.set(getTodaysDateInTheCorrectFormat(), stripHTML(wordObject));
+
+  if (!wordShouldBeStored) return;
+
+  wordStore.set(
+    `${getTodaysDateInTheCorrectFormat()}.${siteToScrapeFrom}`,
+    stripHTML(wordObject)
+  );
 }
 
 export function retrieveLastWordStoreEntry(): GenericWordOfTheDayInterface {
@@ -29,7 +37,10 @@ export function retrieveLastWordStoreEntry(): GenericWordOfTheDayInterface {
   const wordStoreObject = wordStore.toObject() as WordStoreInterface;
   const length = Object.keys(wordStoreObject).length;
 
-  return Object.entries(wordStoreObject)[length - 1][1];
+  return (
+    Object.entries(wordStoreObject)[length - 1][1][siteToScrapeFrom] ??
+    Object.entries(wordStoreObject)[length - 1][1]['Merriam Webster']
+  );
 }
 
 type CustomDateTypes = number | string | Date;
@@ -54,7 +65,7 @@ export function retrieveRangeOfWordsFromStore(
   }
 
   const rangeQueryValue = Object.entries(wordStoreObject)
-    .filter(([date]) => {
+    .filter(({ '0': date }) => {
       const dateInMilliseconds = new Date(date).getTime();
 
       return (
@@ -62,12 +73,17 @@ export function retrieveRangeOfWordsFromStore(
         dateInMilliseconds <= endDateInMilliseconds
       );
     })
-    .map(({ 1: wordObject }) => wordObject) as GenericWordOfTheDayInterface[];
+    .map(({ 1: wordObjects }) => wordObjects[siteToScrapeFrom])
+    .filter(Boolean) as GenericWordOfTheDayInterface[];
 
   return isEmptyArray(rangeQueryValue) ? null : rangeQueryValue;
 }
 
 export function retrieveAllWordsFromStore(): GenericWordOfTheDayInterface[] {
   const wordStore = editJsonFile(wordStorePath);
-  return Object.entries(wordStore.toObject()).map(({ 1: wordObj }) => wordObj);
+  const wordStoreObj = wordStore.toObject() as WordStoreInterface;
+
+  return Object.entries(wordStoreObj).map(
+    ({ 1: wordObj }) => wordObj[siteToScrapeFrom] ?? wordObj['Merriam Webster']
+  );
 }

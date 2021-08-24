@@ -60,6 +60,8 @@ export default async function scrapeDictionaryDotCom(): Promise<
       wordOfTheDayExamples.querySelectorAll(`p`),
       (elem: { textContent: string }) => elem.textContent
     ),
+
+    from: 'dictionary.com',
   };
 
   return wordOfTheDayObject;
