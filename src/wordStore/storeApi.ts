@@ -23,8 +23,9 @@ export function createWordStore(): void {
 
 export function storeWordObject(wordObject: GenericWordOfTheDayInterface): void {
   const wordStore = editJsonFile(wordStorePath, { autosave: true });
+  const noNewWordOfTheDay = Object.prototype.hasOwnProperty.call(wordObject, 'note');
 
-  if (!wordShouldBeStored) return;
+  if (!wordShouldBeStored || noNewWordOfTheDay) return;
 
   wordStore.set(
     `${getTodaysDateInTheCorrectFormat()}.${siteToScrapeFrom}`,
