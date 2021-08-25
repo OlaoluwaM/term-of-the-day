@@ -59,8 +59,6 @@ export default async function grabWordOfTheDay():
     partialWordOfTheDayObject = retrieveLastWordStoreEntry();
     partialWordOfTheDayObject.note =
       "Seems like today's word is not out yet, try again later";
-
-    return partialWordOfTheDayObject as GenericWordOfTheDayInterface;
   }
 
   const { word } = partialWordOfTheDayObject;
