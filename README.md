@@ -32,8 +32,12 @@ You can choose between these sites by passing either
 
 - `wordOfTheDay --M` or `wordOfTheDay --merriam` to scrape from merriam-webster.com
 - `wordOfTheDay --D` or `wordOfTheDay --dictionary` to scrape from Dictionary.com
+- By default calling the `wordOfTheDay` is equivalent to `wordOfTheDay --M`
+- By default words scraped are stored in a json file, however, if you do not want to store
+  a word you can use the `--N` flag
 
 ## Roadmap
 
+- Add API for working with the word Store
 - Improve documentation
 - Package CLI for npm
