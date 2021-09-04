@@ -169,7 +169,7 @@ export function prettifyOutput(wordOfTheDayObj?: GenericWordOfTheDayInterface): 
             : capitalize(removeHTMLTagChars(value));
       }
 
-      return `${chalk.whiteBright.bold.underline(capitalize(key))}\n      ${valueOutput}`;
+      return `${chalk.whiteBright.bold.underline(capitalize(key))}\n${valueOutput}`;
     })
     .join('\n\n');
 
