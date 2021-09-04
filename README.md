@@ -15,12 +15,14 @@ won't have the ability to procrastinate as the word would be right in front of m
 
 ## How to use
 
-Still under development, but works great. If you want to use you'd have to clone the repo
-and run the following
+Still under development, but works great. Let me know if you have any suggestions. You can
+install it from [NPM](https://www.npmjs.com/package/term-of-the-day)
 
-- `npm install` (run this inside the repo's directory)
-- `npm i -g .` (to install this globally)
-- Then try invoking the command `termOfTheDay` in your terminal
+```bash
+npm i -g term-of-the-day
+```
+
+Then run `termOfTheDay` and see what happens 😉
 
 Since this is a CLI, it accepts arguments. These arguments tell the CLI where to scrape
 your word of the day from Currently, the script only scrapes from
@@ -35,10 +37,19 @@ You can choose between these sites by passing either
 - By default calling the `termOfTheDay` is equivalent to `termOfTheDay --M`
 - By default words scraped are stored in a json file, however, if you do not want to store
   a word you can use the `--N` flag
+- Dates must be in the format `yyyy-mm-dd`
+- To get an already scraped word scraped
+
+  ```bash
+  # From Merriam Webster (if such an entry exists)
+  termOfTheDay --M --from "2021-08-22"
+
+  # From Dictionary.com
+  termOfTheDay --D --from "2021-08-22"
+  ```
 
 ## Roadmap
 
 - Add tests
-- Package CLI for npm
 - Improve documentation
 - Make CLI implementation more robust with a help option
