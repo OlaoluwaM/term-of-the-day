@@ -1,21 +1,29 @@
 {
   "name": "term-of-the-day",
   "version": "1.0.0",
-  "description": "",
-  "main": "build/src/index.js",
+  "private": false,
+  "description": "A TS CLI tool for learning a new word everyday right in your terminal",
+  "main": "./build/src/index.js",
   "types": "build/src/types/index.d.ts",
   "scripts": {
+    "prebuild": "npm run lint",
     "build": "tsc",
+    "prepublishOnly": "npm version $npm_config_type",
+    "postpublish": "git push origin && git push --tags",
     "lint": "eslint ./src --ext .ts",
     "lint:fix": "npm run lint -- --fix",
     "prepare": "husky install"
   },
-  "keywords": [],
+  "keywords": [
+    "word of the day",
+    "new word a day",
+    "word",
+    "learn a new word"
+  ],
   "author": "Olaoluwa Mustapha <jomeemustapha@gmail.com>",
-  "license": "ISC",
+  "license": "MIT",
   "devDependencies": {
-    "@types/edit-json-file": "^1.4.1",
-    "@types/jest": "^26.0.22",
+    "@types/edit-json-file": "^1.6.0",
     "@types/jsdom": "^16.2.11",
     "@typescript-eslint/eslint-plugin": "^4.28.0",
     "@typescript-eslint/parser": "^4.25.0",
@@ -23,23 +31,35 @@
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-prettier": "^3.3.1",
     "husky": "^7.0.2",
-    "jest": "^26.6.3",
-    "prettier": "^2.2.1",
-    "typescript": "^4.3.2"
+    "prettier": "^2.3.2",
+    "typescript": "^4.4.2"
   },
   "dependencies": {
+    "@types/node": "^16.7.10",
+    "@types/ora": "^3.2.0",
     "axios": "^0.21.1",
     "boxen": "^5.0.1",
-    "chalk": "^4.1.1",
+    "chalk": "^4.1.2",
     "dotenv": "^8.2.0",
     "edit-json-file": "^1.6.0",
     "eslint-config-airbnb-base": "^14.2.1",
-    "eslint-plugin-import": "^2.22.1",
-    "jsdom": "^16.6.0",
+    "eslint-plugin-import": "^2.24.2",
+    "jsdom": "^17.0.0",
     "ora": "^5.4.0",
     "xstate": "^4.23.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/OlaoluwaM/term-of-the-day"
+  },
+  "engines": {
+    "node": "^12.20.0 || ^14.13.1 || >=16.0.0"
+  },
+  "homepage": "https://github.com/OlaoluwaM/term-of-the-day#readme",
+  "files": [
+    "build/**/*"
+  ],
   "bin": {
-    "wordOfTheDay": "build/src/index.js"
+    "termOfTheDay": "./build/src/index.js"
   }
 }
