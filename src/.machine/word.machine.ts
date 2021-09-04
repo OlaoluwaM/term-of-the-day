@@ -21,7 +21,7 @@ let wordMachineSpinner = ora(`Fetching today's word\n`);
 interface MachineContextInterface {
   wordObj?: Partial<GenericWordOfTheDayInterface>;
   retries: number;
-  errors?: string[];
+  errors: Set<string>;
 }
 
 type ReturnedServiceData = Await<ReturnType<typeof getWordOfTheDay>>;
@@ -29,6 +29,7 @@ type ReturnedServiceData = Await<ReturnType<typeof getWordOfTheDay>>;
 const wordOfTheDayMachineContext: MachineContextInterface = {
   wordObj: undefined,
   retries: 0,
+  errors: new Set<string>(),
 };
 
 const machineModel = createModel(wordOfTheDayMachineContext, {
@@ -71,10 +72,7 @@ const storeErrorInContext = machineModel.assign({
     const event: ErrorPlatformEvent = _event;
     if (!('data' in event)) return context?.errors ?? undefined;
 
-    const errorsCopy = context.errors ? [...context.errors] : [];
-    errorsCopy.push(event.data?.message ?? event.data);
-
-    return errorsCopy;
+    return context.errors.add(event.data?.message ?? event.data);
   },
 });
 
@@ -85,10 +83,11 @@ const wordMachine = machineModel.createMachine(
 
     states: {
       idle: {
+        entry: 'createWordStoreAction',
         on: {
           FETCH: {
             target: 'pending',
-            actions: ['startSpinner', 'createWordStoreAction'],
+            actions: ['startSpinner'],
           },
         },
       },
@@ -138,20 +137,20 @@ const wordMachine = machineModel.createMachine(
       setWordDataIntoContext: setWordDataIntoContext,
       storeErrorInContext: storeErrorInContext,
 
-      announceRetry: context => {
+      announceRetry: (context: any) => {
         wordMachineSpinner.warn(
           chalk.yellowBright.bold(` Retrying (${context.retries}/${MAX_RETRY_COUNT})`)
         );
       },
 
-      createWordStoreAction: () => createWordStore,
+      createWordStoreAction: () => createWordStore(),
 
-      storeWordObjectAction: context => {
+      storeWordObjectAction: (context: any) => {
         storeWordObject(context.wordObj as GenericWordOfTheDayInterface);
       },
 
-      announceErrors: context => {
-        if (!context?.errors) {
+      announceErrors: (context: typeof machineModel.initialContext) => {
+        if (!context.errors.size) {
           logError('No errors to log out');
           return;
         }

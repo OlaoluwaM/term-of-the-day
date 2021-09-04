@@ -50,10 +50,10 @@ export function removeAllWhiteSpaceFromString(str: string): string[] {
 
 export function parseRelationship(
   relationship: RelationshipTypes
-): 'synonyms' | 'anonyms' {
+): 'synonyms' | 'antonyms' {
   const mapObject = {
     equivalent: 'synonyms',
-    antonym: 'anonyms',
+    antonym: 'antonyms',
   } as const;
 
   return mapObject[relationship];
@@ -97,15 +97,19 @@ export function stripHTML(wordObj: GenericWordOfTheDayInterface): {
   );
 }
 
-export function prettifyErrorOutput(errors: string[]): void {
-  const errorOutput: string = errors
-    .map((error, ind) => {
-      return `${chalk.whiteBright.bold(`${ind + 1})`)}  ${chalk.redBright(error)}`;
-    })
-    .join('\n\n')
-    .trim();
+export function prettifyErrorOutput(errors: Set<string>): void {
+  const errorOutput: string[] = [];
 
-  console.log(boxen(errorOutput, boxenOptions));
+  errors.forEach(error => {
+    errorOutput.push(chalk.redBright(error));
+  });
+
+  if (errorOutput.length === 1) {
+    logError(errorOutput[0]);
+  } else {
+    const errorOutputString: string = errorOutput.join('\n\n').trim();
+    console.log(boxen(errorOutputString, boxenOptions));
+  }
 }
 
 function rearrangeWordOfTheDayObject(
@@ -118,7 +122,7 @@ function rearrangeWordOfTheDayObject(
     'definitions',
     'examples',
     'synonyms',
-    'anonyms',
+    'antonyms',
     'note',
     'from',
   ] as const;
@@ -187,4 +191,8 @@ export function logSuccess(string: string): void {
 
 export function isIntegerOrUndefined(val: number): number | undefined {
   return val >= 0 ? val : undefined;
+}
+
+export function valueOrFalse<T>(val: T): false | T {
+  return val ? val : false;
 }

@@ -27,7 +27,7 @@ dotenv.config({ path: resolve(__rootDir, '.env') });
 const { WORDNICK_API_KEY } = process.env;
 
 export type GenericResponse<R> = {
-  type: 'synonyms' | 'anonyms' | 'definitions' | 'examples';
+  type: 'synonyms' | 'antonyms' | 'definitions' | 'examples';
   value: R;
 };
 

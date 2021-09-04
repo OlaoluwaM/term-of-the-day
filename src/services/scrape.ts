@@ -1,8 +1,8 @@
 import scrapeDictionaryDotCom from './dictionary.com';
 import scrapeMerriamWebsterDotCom from './merriam-webster.com';
 
+import { siteArgument } from '../utils/cliArgs';
 import {
-  siteArgument,
   possibleArgumentsForMerriamWebster,
   possibleArgumentsForDictionaryDotCom,
 } from './../utils/constants';
@@ -14,7 +14,7 @@ function scrapeSite() {
     return scrapeDictionaryDotCom;
   }
 
-  return scrapeDictionaryDotCom;
+  return scrapeMerriamWebsterDotCom;
 }
 
 const scrapeFunctionToUse = scrapeSite();

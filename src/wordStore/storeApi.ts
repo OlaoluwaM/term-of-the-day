@@ -2,9 +2,14 @@ import fs from 'fs';
 import path from 'path';
 import editJsonFile from 'edit-json-file';
 
-import { siteToScrapeFrom, wordShouldBeStored } from './../utils/constants';
-import { WordStoreInterface, GenericWordOfTheDayInterface } from '../types';
+import { wordShouldBeStored, siteToScrapeFrom } from '../utils/cliArgs';
 import { getTodaysDateInTheCorrectFormat, isEmptyArray, stripHTML } from '../utils/utils';
+
+import type {
+  CorrectDateFormat,
+  WordStoreInterface,
+  GenericWordOfTheDayInterface,
+} from './../types/index.d';
 
 const wordStorePath = path.resolve(__dirname, 'store.json');
 
@@ -41,6 +46,17 @@ export function retrieveLastWordStoreEntry(): GenericWordOfTheDayInterface {
   return (
     Object.entries(wordStoreObject)[length - 1][1][siteToScrapeFrom] ??
     Object.entries(wordStoreObject)[length - 1][1]['Merriam Webster']
+  );
+}
+
+export function retrieveWordFromStore(
+  date: CorrectDateFormat
+): GenericWordOfTheDayInterface {
+  const wordStore = editJsonFile(wordStorePath);
+  const wordStoreObject = wordStore.toObject() as WordStoreInterface;
+
+  return (
+    wordStoreObject[date][siteToScrapeFrom] ?? wordStoreObject[date]['Merriam Webster']
   );
 }
 

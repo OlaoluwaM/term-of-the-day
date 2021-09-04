@@ -1,10 +1,64 @@
 import axios from 'axios';
 
-import { limit, removeAllWhiteSpaceFromString } from '../utils/utils';
 import { JSDOM } from 'jsdom';
 import { throwMissingElementError } from './dictionary.com';
+import { limit, removeAllWhiteSpaceFromString } from '../utils/utils';
 
 import type { GenericWordOfTheDayInterface } from '../types';
+
+function scrapeRelatedAndOppositeWords(document: any): {
+  synonyms?: string[];
+  antonyms?: string[];
+} {
+  type Labels = 'Synonyms' | 'Antonyms';
+
+  const labels = Array.from(
+    document.querySelectorAll('.function-label') ?? { length: 0 },
+    (elem: { textContent: Labels }) => {
+      return elem?.textContent;
+    }
+  ).filter(label => label.search(/Synonyms|Antonyms/i) > -1);
+
+  switch (labels.length) {
+    case 1:
+      return {
+        [labels[0].toLocaleLowerCase()]: limit(
+          Array.from(
+            document.querySelectorAll(`p.function-label:first-of-type + ul > li > a`),
+            (elem: { textContent: string }) =>
+              removeAllWhiteSpaceFromString(elem?.textContent.trim()).join('')
+          ),
+          8
+        ).filter(Boolean),
+      };
+
+    case 2:
+      return {
+        [labels[0].toLocaleLowerCase()]: limit(
+          Array.from(
+            document.querySelectorAll(`p.function-label:first-of-type + ul > li > a`),
+            (elem: { textContent: string }) =>
+              removeAllWhiteSpaceFromString(elem?.textContent.trim()).join('')
+          ),
+          8
+        ).filter(Boolean),
+
+        [labels[1].toLocaleLowerCase()]: limit(
+          Array.from(
+            document.querySelectorAll(`p.function-label:first-of-type + ul > li > a`) ?? {
+              length: 0,
+            },
+            (elem: { textContent: string }) =>
+              removeAllWhiteSpaceFromString(elem?.textContent.trim()).join('')
+          ),
+          8
+        ).filter(Boolean),
+      };
+
+    default:
+      return { synonyms: [], antonyms: [] };
+  }
+}
 
 export default async function scrapeMerriamWebsterDotCom(): Promise<
   Partial<GenericWordOfTheDayInterface>
@@ -49,18 +103,31 @@ export default async function scrapeMerriamWebsterDotCom(): Promise<
     throwMissingElementError('Definitions');
   }
 
-  const examples = limit(
+  const exampleSet1 = limit(
+    Array.from(
+      wordEntryDocument.querySelectorAll('div.in-sentences span.ex-sent'),
+      (elem: { textContent: string }) =>
+        removeAllWhiteSpaceFromString(elem?.textContent.trim()).join('')
+    ),
+    4
+  );
+
+  const examplesSet2 = limit(
     Array.from(
       wordEntryDocument.querySelectorAll('span.has-aq'),
       (elem: { textContent: string }) =>
-        removeAllWhiteSpaceFromString(elem.textContent.trim()).join('')
+        removeAllWhiteSpaceFromString(elem?.textContent.trim()).join('')
     ),
     3
   );
 
+  const examples = exampleSet1.concat(examplesSet2).filter(Boolean);
+
   if (!examples || examples.length === 0) {
     throwMissingElementError('Examples');
   }
+
+  const relatedWordsObject = scrapeRelatedAndOppositeWords(wordEntryDocument);
 
   return {
     word,
@@ -68,6 +135,7 @@ export default async function scrapeMerriamWebsterDotCom(): Promise<
     partOfSpeech,
     pronunciation,
     examples,
+    ...relatedWordsObject,
     from: 'merriam-webster.com',
   };
 }

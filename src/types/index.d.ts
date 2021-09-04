@@ -32,7 +32,7 @@ export interface GenericWordOfTheDayInterface {
   definitions: string[];
   examples: string[];
   synonyms?: string[];
-  anonyms?: string[];
+  antonyms?: string[];
   note?: string;
   from: 'merriam-webster.com' | 'dictionary.com';
 }
