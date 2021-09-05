@@ -45,7 +45,7 @@ function scrapeRelatedAndOppositeWords(document: any): {
 
         [labels[1].toLocaleLowerCase()]: limit(
           Array.from(
-            document.querySelectorAll(`p.function-label:first-of-type + ul > li > a`) ?? {
+            document.querySelectorAll(`p.function-label:last-of-type + ul > li > a`) ?? {
               length: 0,
             },
             (elem: { textContent: string }) =>
