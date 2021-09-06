@@ -2,9 +2,14 @@ import axios from 'axios';
 
 import { JSDOM } from 'jsdom';
 import { throwMissingElementError } from './dictionary.com';
-import { limit, removeAllWhiteSpaceFromString } from '../utils/utils';
+import {
+  getTodaysDateInTheCorrectFormat,
+  limit,
+  removeAllWhiteSpaceFromString,
+} from '../utils/utils';
 
 import type { GenericWordOfTheDayInterface } from '../types';
+import { dateToUse } from '../utils/cliArgs';
 
 function scrapeRelatedAndOppositeWords(document: any): {
   synonyms?: string[];
@@ -70,6 +75,15 @@ export default async function scrapeMerriamWebsterDotCom(): Promise<
   const {
     window: { document },
   }: JSDOM = new JSDOM(wordOfTheDayContent);
+
+  const dateOnPage = document
+    .querySelector('span.w-a-title')
+    .textContent.split(': ')[1]
+    .trim() as string;
+
+  const dateOnPageInCorrectFormat = getTodaysDateInTheCorrectFormat(new Date(dateOnPage));
+
+  if (dateOnPageInCorrectFormat !== dateToUse) throw new Error("Not today's word");
 
   const word = document.querySelector(`div.word-and-pronunciation > h1`).textContent;
   if (!word) throwMissingElementError('word');

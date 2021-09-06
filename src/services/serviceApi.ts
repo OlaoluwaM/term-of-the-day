@@ -3,43 +3,31 @@ import editJsonFile from 'edit-json-file';
 import scrapeFunctionToUse from './scrape';
 
 import { resolveSiteToPartialUrl } from '../utils/constants';
-import { dateToUse, siteToScrapeFrom, usePastDate } from '../utils/cliArgs';
 import { getDefinition, getExamples, getRelatedWordsFromWordNick } from './wordnick';
 import {
-  doesStoreExist,
-  retrieveWordFromStore,
+  checkIfWordExistsForDate,
   retrieveLastWordStoreEntry,
 } from '../wordStore/storeApi';
+import {
+  dateToUse,
+  usePastDate,
+  updateWordEntry,
+  siteToScrapeFrom,
+} from '../utils/cliArgs';
 
-import type { Await, WordStoreInterface, GenericWordOfTheDayInterface } from '../types';
+import type { Await, GenericWordOfTheDayInterface } from '../types';
 
 function retrieveWordFromCacheIfPossible(): GenericWordOfTheDayInterface | false {
-  const _wordStore = editJsonFile(
-    path.resolve(`${path.dirname(path.dirname(__filename))}`, 'wordStore', 'store.json')
-  );
+  if (updateWordEntry && !usePastDate) return false;
 
-  const wordStoreObject = JSON.parse(
-    JSON.stringify(_wordStore.toObject())
-  ) as WordStoreInterface;
+  const wordObj = checkIfWordExistsForDate(dateToUse);
 
-  const todayWordHasBeenCached = Object.prototype.hasOwnProperty.call(
-    wordStoreObject,
-    dateToUse
-  );
-
-  const todaysWordFromSiteAlreadyExists = Object.prototype.hasOwnProperty.call(
-    wordStoreObject[dateToUse] ?? {},
-    siteToScrapeFrom
-  );
-
-  if (todayWordHasBeenCached && todaysWordFromSiteAlreadyExists) {
-    const wordOfTheDayObject = retrieveWordFromStore(dateToUse);
-
-    if (wordOfTheDayObject) return wordOfTheDayObject;
+  if (!wordObj || !wordObj?.[siteToScrapeFrom]) {
+    if (usePastDate) throw new Error(`No word entry for date: ${dateToUse}`);
+    return false;
   }
 
-  if (usePastDate) throw new Error(`No word entry for date: ${dateToUse}`);
-  return false;
+  return wordObj[siteToScrapeFrom] as GenericWordOfTheDayInterface;
 }
 
 export default async function grabWordOfTheDay():

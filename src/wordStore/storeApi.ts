@@ -9,6 +9,7 @@ import type {
   CorrectDateFormat,
   WordStoreInterface,
   GenericWordOfTheDayInterface,
+  MultiSiteWordStoreInterface,
 } from './../types/index.d';
 
 const wordStorePath = path.resolve(__dirname, 'store.json');
@@ -24,6 +25,16 @@ export function doesStoreExist(): boolean {
 
 export function createWordStore(): void {
   if (!doesStoreExist()) fs.writeFileSync(wordStorePath, '{}');
+}
+
+export function checkIfWordExistsForDate(
+  date: CorrectDateFormat = getTodaysDateInTheCorrectFormat()
+): false | MultiSiteWordStoreInterface {
+  const wordStore = editJsonFile(wordStorePath, { autosave: true });
+  const wordStoreObj = wordStore.toObject();
+
+  const entryExists = Object.prototype.hasOwnProperty.call(wordStoreObj, date);
+  return entryExists ? wordStore.get(date) : false;
 }
 
 export function storeWordObject(wordObject: GenericWordOfTheDayInterface): void {

@@ -20,3 +20,4 @@ export const argumentsForNonStorage = ['--N', '--no-store'];
 export const possibleArgumentsForMerriamWebster = ['--M', '--merriam'];
 export const possibleArgumentsForDictionaryDotCom = ['--D', '--dictionary'];
 export const argumentsForPastWordRetrieval = '--from';
+export const argumentsForEntryUpdate = ['--u', '--update'];
