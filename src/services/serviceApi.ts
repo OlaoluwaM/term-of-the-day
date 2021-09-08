@@ -1,5 +1,3 @@
-import path from 'path';
-import editJsonFile from 'edit-json-file';
 import scrapeFunctionToUse from './scrape';
 
 import { resolveSiteToPartialUrl } from '../utils/constants';
@@ -8,22 +6,17 @@ import {
   checkIfWordExistsForDate,
   retrieveLastWordStoreEntry,
 } from '../wordStore/storeApi';
-import {
-  dateToUse,
-  usePastDate,
-  updateWordEntry,
-  siteToScrapeFrom,
-} from '../utils/cliArgs';
+import { dateToUse, updateWordEntry, siteToScrapeFrom } from '../utils/cliArgs';
 
 import type { Await, GenericWordOfTheDayInterface } from '../types';
 
 function retrieveWordFromCacheIfPossible(): GenericWordOfTheDayInterface | false {
-  if (updateWordEntry && !usePastDate) return false;
+  if (updateWordEntry) return false;
 
   const wordObj = checkIfWordExistsForDate(dateToUse);
 
   if (!wordObj || !wordObj?.[siteToScrapeFrom]) {
-    if (usePastDate) throw new Error(`No word entry for date: ${dateToUse}`);
+    // if (usePastDate) throw new Error(`No word entry for date: ${dateToUse}`);
     return false;
   }
 

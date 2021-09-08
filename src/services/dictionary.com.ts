@@ -3,6 +3,7 @@ import axios from 'axios';
 import { JSDOM } from 'jsdom';
 import { getMonthAndDay, removeAllWhiteSpaceFromString } from '../utils/utils';
 
+import { dateToUse } from '../utils/cliArgs';
 import type { GenericWordOfTheDayInterface } from '../types';
 
 export function throwMissingElementError(item = ''): never {
@@ -22,9 +23,15 @@ export default async function scrapeDictionaryDotCom(): Promise<
     window: { document },
   }: JSDOM = new JSDOM(htmlContent);
 
+  console.log(getMonthAndDay(new Date(dateToUse)));
+
+  // Hmmm: we may need to use puppeteer here due to the nature of the site
+  // Words older than 1 - 3 days will need user interaction to be revealed
+  // Hence, more dynamic scraping needs to be used
   const wordOfTheDayElement = document.querySelector(
-    `div[data-date='${getMonthAndDay()}'] > :nth-child(2)`
+    `div[data-date='${getMonthAndDay(new Date(dateToUse))}'] > :nth-child(2)`
   );
+
   if (!wordOfTheDayElement) throwMissingElementError('Word of the day element');
 
   const wordOfTheDayItems = wordOfTheDayElement.querySelector(

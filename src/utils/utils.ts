@@ -65,7 +65,11 @@ export function stripFalsyValuesFromProperties(
   return Object.fromEntries(
     Object.entries(obj)
       .map(([key, value]): [string, unknown] => {
-        if (Array.isArray(value)) return [key, value.filter(Boolean)];
+        if (Array.isArray(value)) {
+          if (isEmptyArray(value)) return [key, undefined];
+          return [key, value.filter(Boolean)];
+        }
+
         if (!value) [key, undefined];
         return [key, value];
       })

@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import editJsonFile from 'edit-json-file';
 
-import { wordShouldBeStored, siteToScrapeFrom } from '../utils/cliArgs';
+import { wordShouldBeStored, siteToScrapeFrom, dateToUse } from '../utils/cliArgs';
 import { getTodaysDateInTheCorrectFormat, isEmptyArray, stripHTML } from '../utils/utils';
 
 import type {
@@ -43,10 +43,7 @@ export function storeWordObject(wordObject: GenericWordOfTheDayInterface): void 
 
   if (!wordShouldBeStored || noNewWordOfTheDay) return;
 
-  wordStore.set(
-    `${getTodaysDateInTheCorrectFormat()}.${siteToScrapeFrom}`,
-    stripHTML(wordObject)
-  );
+  wordStore.set(`${dateToUse}.${siteToScrapeFrom}`, stripHTML(wordObject));
 }
 
 export function retrieveLastWordStoreEntry(): GenericWordOfTheDayInterface {

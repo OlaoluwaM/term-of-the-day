@@ -3,13 +3,21 @@ import axios from 'axios';
 import { JSDOM } from 'jsdom';
 import { throwMissingElementError } from './dictionary.com';
 import {
-  getTodaysDateInTheCorrectFormat,
   limit,
   removeAllWhiteSpaceFromString,
+  getTodaysDateInTheCorrectFormat,
 } from '../utils/utils';
 
-import type { GenericWordOfTheDayInterface } from '../types';
-import { dateToUse } from '../utils/cliArgs';
+import type { CorrectDateFormat, GenericWordOfTheDayInterface } from '../types';
+import { dateToUse, usePastDate } from '../utils/cliArgs';
+
+function generateUrl(
+  date: CorrectDateFormat = getTodaysDateInTheCorrectFormat()
+): string {
+  const returnValue = 'https://www.merriam-webster.com/word-of-the-day';
+  if (usePastDate) return returnValue.concat(`/test-${date}`);
+  return returnValue;
+}
 
 function scrapeRelatedAndOppositeWords(document: any): {
   synonyms?: string[];
@@ -69,7 +77,7 @@ export default async function scrapeMerriamWebsterDotCom(): Promise<
   Partial<GenericWordOfTheDayInterface>
 > {
   const { data: wordOfTheDayContent }: { data: string } = await axios.get(
-    'https://www.merriam-webster.com/word-of-the-day'
+    generateUrl(dateToUse)
   );
 
   const {
