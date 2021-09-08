@@ -1,6 +1,6 @@
 {
   "name": "term-of-the-day",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "private": false,
   "description": "A TS CLI tool for learning a new word everyday right in your terminal",
   "main": "./build/src/index.js",
