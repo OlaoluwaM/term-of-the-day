@@ -145,10 +145,6 @@ export default async function scrapeMerriamWebsterDotCom(): Promise<
 
   const examples = exampleSet1.concat(examplesSet2).filter(Boolean);
 
-  if (!examples || examples.length === 0) {
-    throwMissingElementError('Examples');
-  }
-
   const relatedWordsObject = scrapeRelatedAndOppositeWords(wordEntryDocument);
 
   return {

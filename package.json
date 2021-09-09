@@ -12,9 +12,12 @@
     "postpublish": "git push origin && git push --tags",
     "lint": "eslint ./src --ext .ts",
     "lint:fix": "npm run lint -- --fix",
-    "prepare": "husky install"
+    "prepare": "npm run build; husky install"
   },
   "keywords": [
+    "word a day",
+    "word",
+    "CLI",
     "word of the day",
     "new word a day",
     "word",
