@@ -152,13 +152,8 @@ export function prettifyOutput(wordOfTheDayObj?: GenericWordOfTheDayInterface): 
 
       if (Array.isArray(value)) {
         valueOutput = value
-          .map((value: string, index: number, arr: string[]) => {
+          .map((value: string, index: number) => {
             const stringWithoutHTML = removeHTMLTagChars(value);
-
-            if (value.startsWith('—')) {
-              arr[index - 1].concat(` ${value}`);
-              return undefined;
-            }
 
             return `${chalk.white(index + 1)}. ${chalk.green.bold(
               capitalize(stringWithoutHTML)

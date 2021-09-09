@@ -131,17 +131,17 @@ export default async function scrapeMerriamWebsterDotCom(): Promise<
       (elem: { textContent: string }) =>
         removeAllWhiteSpaceFromString(elem?.textContent.trim()).join('')
     ),
-    4
-  );
+    5
+  ).filter(example => !example.startsWith('—'));
 
   const examplesSet2 = limit(
     Array.from(
-      wordEntryDocument.querySelectorAll('span.has-aq'),
+      wordEntryDocument.querySelectorAll('span.t'),
       (elem: { textContent: string }) =>
         removeAllWhiteSpaceFromString(elem?.textContent.trim()).join('')
     ),
-    3
-  );
+    5
+  ).filter(example => !exampleSet1.includes(example));
 
   const examples = exampleSet1.concat(examplesSet2).filter(Boolean);
 
