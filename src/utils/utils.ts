@@ -6,7 +6,8 @@ import type { FalsyValues, GenericWordOfTheDayInterface } from '../types';
 
 const boxenOptions = {
   padding: 1,
-  margin: 1,
+  float: 'left',
+  align: 'left',
   borderStyle: 'round',
   dimBorder: true,
 } as const;
@@ -173,7 +174,7 @@ export function prettifyOutput(wordOfTheDayObj?: GenericWordOfTheDayInterface): 
     .join('\n\n');
 
   console.log(chalk.bgGreen.whiteBright.bold('\nThe Term of The Day'));
-  console.log(boxen(wordOfTheDayString, boxenOptions));
+  console.log(boxen(wordOfTheDayString.trimStart(), boxenOptions));
 }
 
 export function logInfo(string: string): void {
