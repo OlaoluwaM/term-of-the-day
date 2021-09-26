@@ -9,6 +9,7 @@ import {
 import { dateToUse, updateWordEntry, siteToScrapeFrom } from '../utils/cliArgs';
 
 import type { Await, GenericWordOfTheDayInterface } from '../types';
+import { logError } from '../utils/utils';
 
 function retrieveWordFromCacheIfPossible(): GenericWordOfTheDayInterface | false {
   if (updateWordEntry) return false;
@@ -35,6 +36,8 @@ export default async function grabWordOfTheDay():
   try {
     partialWordOfTheDayObject = await scrapeFunctionToUse();
   } catch (err) {
+    logError((err as Error).message);
+
     partialWordOfTheDayObject = retrieveLastWordStoreEntry();
     partialWordOfTheDayObject.note =
       "Seems like today's word is not out yet, try again later";
